@@ -1,13 +1,14 @@
 const router=require('express').Router()
 const path=require('path')
 const multer=require('multer')
+const uuid=require('uuid/v4')
 
 //config multer para q guarde la img con su nombre original. Le paso esto a Multer Middleware
 const multerStorage=multer.diskStorage({
     destination:path.join(__dirname,'../public/images'),
     filename:(req,file,cb)=>{
         //si no hay error le paso null
-        cb(null,file.originalname)
+        cb(null,uuid() + path.extname(file.originalname).toLowerCase())
     }
 })
 
@@ -30,9 +31,11 @@ const upload=multer({
         if(mimetype && extname){
             // el cb dice: no error, continua
             cb(null,true)
+        }else{
+            //sino error
+            console.log(`${mimetype} y ${extname}`)
+            cb('Error: Archivo debe ser imagen')
         }
-        //sino error
-        cb('Error: Archivo debe ser imagen')
     }
 }).single('imageInput')
 
