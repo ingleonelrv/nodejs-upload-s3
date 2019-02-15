@@ -19,7 +19,21 @@ router.get('/',(req,res)=>{
 const upload=multer({
     storage:multerStorage,
     dest: path.join(__dirname,'../public/images'),
-    limits:{fileSize:1000000}//size en bytes
+    limits:{fileSize:1000000},//size en bytes
+    fileFilter:(req,file,cb)=>{
+        //expresion regular /abc/
+        const fileType= /jpeg|jpg|png/
+        //comprueba q el tipo subido coincide con alguna de las esperadas
+        const mimetype=fileType.test(file.mimetype)
+        //ahora compruebo la extension con un metodo de path pasandole el originalname
+        const extname=fileType.test(path.extname(file.originalname))
+        if(mimetype && extname){
+            // el cb dice: no error, continua
+            cb(null,true)
+        }
+        //sino error
+        cb('Error: Archivo debe ser imagen')
+    }
 }).single('imageInput')
 
 router.post('/upload',upload,(req,res)=>{

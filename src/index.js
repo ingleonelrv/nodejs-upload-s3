@@ -16,7 +16,10 @@ app.set('view engine','ejs')
 
 //MIDDLEWARE SE EJECUTAN ANTES DE LAS ROUTES
 
-// app.use()
+
+//STATIC FILES
+//desde el navegador :3000/images/cualquier_img.ext
+app.use(express.static(path.join(__dirname,'public')))
 
 
 //ROUTES
