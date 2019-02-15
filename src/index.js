@@ -1,15 +1,6 @@
 const express=require('express')
 const path=require('path')
-const multer=require('multer')
 
-//config multer para q guarde la img con su nombre original. Le paso esto a Multer Middleware
-const multerStorage=multer.diskStorage({
-    destination:path.join(__dirname,'public/images'),
-    filename:(req,file,cb)=>{
-        //si no hay error le paso null
-        cb(null,file.originalname)
-    }
-})
 
 //INITIALIZATIONSS
 const app=express()
@@ -24,22 +15,13 @@ app.set('view engine','ejs')
 
 
 //MIDDLEWARE SE EJECUTAN ANTES DE LAS ROUTES
-//la configuracion de multer, puedo cambiar single('nombre_del_campo')
-app.use(multer({
-    storage:multerStorage,
-    dest: path.join(__dirname,'public/images')
-}).single('imageInput'))
+
+// app.use()
 
 
 //ROUTES
-app.get('/',(req,res)=>{
-    res.render('index.ejs')
-})
-app.post('/upload',(req,res)=>{
-    //por medio de req.file me llega la imagen
-    console.log(req.file)
-    res.send('Uploaded')
-})
+//uso las rutas q estan en otro archivo
+app.use(require('./routes/index.router'))
 
 
 //START SERVER
