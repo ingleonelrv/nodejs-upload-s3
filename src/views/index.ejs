@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>NodeJS upload Image</title>
+</head>
+<body>
+    <h3>Upload Image</h3>
+    <!-- enctype="multipart/form-data" asi le indico q enviare imagen y no solo texto -->
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+        <input type="file" name="imageInput" id="">
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
