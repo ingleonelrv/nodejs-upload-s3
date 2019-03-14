@@ -3,45 +3,57 @@ const path=require('path')
 const multer=require('multer')
 const uuid=require('uuid/v4')
 
-//config multer para q guarde la img con su nombre original. Le paso esto a Multer Middleware
-const multerStorage=multer.diskStorage({
-    destination:path.join(__dirname,'../public/images'),
-    filename:(req,file,cb)=>{
-        //si no hay error le paso null
-        cb(null,uuid() + path.extname(file.originalname).toLowerCase())
+const multerS3 = require('multer-s3');
+const aws = require('aws-sdk');
+
+aws.config.update({
+    secretAccessKey: "LtXk4m5dQCHHFUXEbPHMbHVz5GMjeiukjoZKkQrC",
+    accessKeyId: "AKIAJUF4RJMCK7QUH75Q",
+    region: 'us-east-1'
+});
+
+const s3 = new aws.S3();
+
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type, only JPEG and PNG is allowed!'), false);
     }
-})
+  }
+
+const upload = multer({
+    fileFilter,
+    storage: multerS3({
+      s3: s3,
+      bucket: 'ingleonelrv-image-test',
+      acl: 'public-read',
+      metadata: function (req, file, cb) {
+        cb(null, {fieldName: file.fieldname});
+      },
+      key: function (req, file, cb) {
+          console.log(file.originalname.toLowerCase())
+        cb(null, Date.now().toString()+'_'+file.originalname.toLowerCase())
+      }
+    })
+  })
+  
+//   module.exports = upload;
 
 router.get('/',(req,res)=>{
     res.render('index.ejs')
 })
 
-//la configuracion de multer, puedo cambiar single('nombre_del_campo')
-const upload=multer({
-    storage:multerStorage,
-    dest: path.join(__dirname,'../public/images'),
-    limits:{fileSize:1000000},//size en bytes
-    fileFilter:(req,file,cb)=>{
-        //expresion regular /abc/
-        const fileType= /jpeg|jpg|png/
-        //comprueba q el tipo subido coincide con alguna de las esperadas
-        const mimetype=fileType.test(file.mimetype)
-        //ahora compruebo la extension con un metodo de path pasandole el originalname
-        const extname=fileType.test(path.extname(file.originalname))
-        if(mimetype && extname){
-            // el cb dice: no error, continua
-            cb(null,true)
-        }else{
-            //sino error
-            console.log(`${mimetype} y ${extname}`)
-            cb('Error: Archivo debe ser imagen')
-        }
-    }
-}).single('imageInput')
+const singleUpload = upload.single('image')
 
-router.post('/upload',upload,(req,res)=>{
-    //por medio de req.file me llega la imagen
-    console.log(req.file)
-    res.send('Uploaded')
-})
-module.exports=router
+router.post('/upload', function(req, res) {
+    singleUpload(req, res, function(err, some) {
+      if (err) {
+        return res.status(422).send({errors: [{title: 'Image Upload Error', detail: err.message}] });
+      }
+  
+      return res.json({'imageUrl': req.file.location});
+    });
+  })
+  
+  module.exports = router;
